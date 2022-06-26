@@ -1,0 +1,45 @@
+on: [push, pull_request, workflow_call]
+
+name: CI
+
+jobs:
+  test:
+    name: test
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        target:
+          - x86_64-unknown-linux-musl
+          - aarch64-unknown-linux-musl
+    steps:
+      - uses: actions/checkout@v3
+      - run: sudo apt-get install -y musl-tools
+      - run: sudo apt-get install -y gcc-aarch64-linux-gnu
+        if: matrix.target == 'aarch64-unknown-linux-musl'
+      - run: rustup target add ${{ matrix.target }}
+      - uses: actions/cache@v3
+        with:
+          path: |
+            target/
+            ~/.cargo/git/db/
+            ~/.cargo/registry/cache/
+            ~/.cargo/registry/index/
+          key: "${{ runner.os }}-cargo-${{ matrix.target }}-${{ hashFiles('**/Cargo.lock') }}"
+      - run: cargo build --release --target=${{ matrix.target }}
+      - run: cargo test --release --target=${{ matrix.target }}
+      - uses: actions/upload-artifact@v3
+        with:
+          name: discord-send-${{ matrix.target }}
+          path: ./target/${{ matrix.target }}/release/discord-send
+  fmt:
+    name: fmt
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+      - run: cargo fmt --all -- --check
+  clippy:
+    name: clippy
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+      - run: cargo clippy --all-features -- -D warnings

@@ -1,0 +1,31 @@
+on:
+  push:
+    tags: ["*"]
+
+name: release
+
+jobs:
+  test:
+    name: test
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: ./.github/workflows/ci.yml
+  release:
+    name: release
+    runs-on: ubuntu-20.04
+    needs: test
+    strategy:
+      matrix:
+        target:
+          - x86_64-unknown-linux-musl
+          - aarch64-unknown-linux-musl
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: discord-send-${{ matrix.target }}
+      - run: mv discord-send discord-send-${{ matrix.target }}
+      - uses: softprops/action-gh-release@v1
+        with:
+          files: discord-send-*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
