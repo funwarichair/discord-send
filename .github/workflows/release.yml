@@ -7,9 +7,7 @@ name: release
 jobs:
   test:
     name: test
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: ./.github/workflows/ci.yml
+    uses: ./.github/workflows/ci.yml
   release:
     name: release
     runs-on: ubuntu-20.04
