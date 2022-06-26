@@ -28,11 +28,15 @@ jobs:
             ~/.cargo/registry/index/
           key: "${{ runner.os }}-cargo-${{ matrix.target }}-${{ hashFiles('**/Cargo.lock') }}"
       - run: cargo build --release --target=${{ matrix.target }}
-      - run: cargo test --release --target=${{ matrix.target }}
       - uses: actions/upload-artifact@v3
         with:
           name: discord-send-${{ matrix.target }}
           path: ./target/${{ matrix.target }}/release/discord-send
+      - uses: docker/setup-qemu-action@v2
+        with:
+          platforms: arm64
+        if: matrix.target == 'aarch64-unknown-linux-gnu'
+      - run: cargo test --release --target=${{ matrix.target }}
   fmt:
     name: fmt
     runs-on: ubuntu-20.04
