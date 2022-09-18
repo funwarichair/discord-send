@@ -25,7 +25,7 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/registry/index/
           key: "${{ runner.os }}-cargo-${{ matrix.target }}-${{ hashFiles('**/Cargo.lock') }}"
-      - run: cargo zigbuild --tests --release --target=${{ matrix.target }}.2.17
+      - run: cargo zigbuild --release --target=${{ matrix.target }}.2.17
       - uses: actions/upload-artifact@v3
         with:
           name: discord-send-${{ matrix.target }}
